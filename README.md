@@ -88,7 +88,9 @@ Sounds come from twitchbar itself, so you hear every message from the first run.
 brew install terminal-notifier
 ```
 
-[terminal-notifier](https://github.com/julienXX/terminal-notifier) is a small signed app that posts banners on behalf of command-line tools. twitchbar uses it automatically when it is installed; the first banner makes macOS ask whether terminal-notifier may notify you, answer **Allow**, and a click on a banner opens the page behind it. Without it twitchbar posts the banner from its own process, which macOS asks about once as **python3.x Notifications** and, on recent versions, often never shows.
+[terminal-notifier](https://github.com/julienXX/terminal-notifier) is a small signed app that posts banners on behalf of command-line tools. twitchbar uses it automatically when it is installed, and a click on a banner opens the page behind it.
+
+One macOS rule to know: a banner from a command-line process is attributed to the application that launched it. Start twitchbar from `twitchbar.app` (next step) or from Terminal.app and the banners show; start it from a terminal that is not allowed to notify (iTerm, an editor's terminal) and nothing appears, silently, no matter what you allow. If a permission question appears the first time, answer **Allow**.
 
 ### A double-clickable app (macOS)
 
@@ -180,7 +182,7 @@ Session counters reset every time the stream goes live, so the numbers in the me
 - **`zsh: command not found: twitchbar` right after `uv tool install`**: uv puts its tools in `~/.local/bin`, which is not on PATH on a fresh shell. Run `uv tool update-shell`, open a new terminal, try again.
 - **"Invalid client name" on the Twitch console**: the application name must not contain the word *twitch*.
 - **The browser says the redirect failed**: the redirect URL in the Twitch console must be exactly `http://localhost:17563`, and nothing else may be listening on port 17563 while you authorize.
-- **Sounds play but no banners on macOS**: install terminal-notifier (see Install, step 3) and allow it when asked. If no permission dialog ever appears, not even for `terminal-notifier -title test -message hello` run by hand, macOS itself is refusing new apps; a restart has fixed that state before. Also check that a Focus mode is not on and that System Settings → Notifications lists terminal-notifier with banners enabled.
+- **Sounds play but no banners on macOS**: install terminal-notifier (Install, step 3), then start twitchbar from `twitchbar.app` or Terminal.app rather than from iTerm or an editor terminal: macOS attributes the banner to the launching application and drops it when that application may not notify. A quick check is `terminal-notifier -title test -message hello` in Terminal.app. Also make sure no Focus mode is on.
 - **No sound at all on macOS**: the sound name in `[sounds]` is not one of the system sounds; the log says which one. `""` means silent on purpose.
 - **The bar shows `⚠️ twitchbar`**: the connection failed; the log in `twitchbar paths` says why. A revoked token is fixed by `twitchbar logout` and starting again.
 - **Chat messages arrive but no join notifications**: the token predates the chatters permission. `twitchbar logout`, start again, authorize.
