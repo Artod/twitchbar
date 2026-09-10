@@ -7,10 +7,12 @@ import getpass
 import logging
 import sys
 from collections.abc import Callable, Sequence
+from pathlib import Path
 
 from twitchbar import __version__
 from twitchbar.config import Paths, load, save
 from twitchbar.events import Event
+from twitchbar.lock import acquire
 from twitchbar.log import setup_logging
 
 log = logging.getLogger(__name__)
@@ -76,6 +78,13 @@ def _parser() -> argparse.ArgumentParser:
 
     paths = commands.add_parser("paths", help="print where the config, token and log live")
     paths.set_defaults(handler=cmd_paths)
+
+    install_app = commands.add_parser(
+        "install-app", help="create a double-clickable twitchbar.app in /Applications (macOS)"
+    )
+    install_app.add_argument("--remove", action="store_true", help="delete the app bundle instead")
+    install_app.add_argument("--into", type=Path, default=None, help="folder to put the app in")
+    install_app.set_defaults(handler=cmd_install_app)
     return parser
 
 
@@ -87,6 +96,11 @@ def cmd_run(args: argparse.Namespace) -> int:
     if not args.demo and not config.is_complete():
         print(SETUP_HINT, file=sys.stderr)
         return 2
+    lock = acquire(paths.lock_file)  # held until this process exits
+    if lock is None:
+        log.warning("another twitchbar is already running, exiting")
+        print("twitchbar is already running (look in the menu bar).", file=sys.stderr)
+        return 3
     log.info("twitchbar %s starting, log at %s", __version__, log_file)
 
     from twitchbar.app import App, Source
@@ -198,6 +212,27 @@ def cmd_autostart(args: argparse.Namespace) -> int:
     else:
         removed = autostart.disable()
         print(f"Removed {removed}" if removed else "Autostart was not enabled.")
+    return 0
+
+
+def cmd_install_app(args: argparse.Namespace) -> int:
+    """Create or remove the macOS launcher bundle."""
+    if sys.platform != "darwin":
+        print(
+            "install-app builds a macOS .app bundle; on Windows create a shortcut to `twitchbar`.",
+            file=sys.stderr,
+        )
+        return 2
+    from twitchbar import install_app
+
+    location = args.into or install_app.default_location()
+    if args.remove:
+        removed = install_app.remove(location)
+        print(f"Removed {removed}" if removed else f"No {install_app.APP_NAME} in {location}.")
+        return 0
+    app = install_app.build(location)
+    print(f"Created {app}")
+    print("Double-click it, or drag it to the Dock or the Desktop. Running it twice does nothing.")
     return 0
 
 

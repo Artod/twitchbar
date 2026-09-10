@@ -5,6 +5,7 @@ import pytest
 from twitchbar import __version__
 from twitchbar.cli import main
 from twitchbar.config import ENV_CLIENT_ID, ENV_CLIENT_SECRET, ENV_CONFIG
+from twitchbar.lock import acquire
 
 
 def test_version(capsys: pytest.CaptureFixture[str]) -> None:
@@ -29,6 +30,20 @@ def test_run_without_credentials_explains_setup(
     monkeypatch.setattr("twitchbar.cli.setup_logging", lambda *a, **k: tmp_path / "log")
     assert main([]) == 2
     assert "twitchbar setup" in capsys.readouterr().err
+
+
+def test_run_refuses_a_second_instance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv(ENV_CONFIG, str(tmp_path / "config.toml"))
+    monkeypatch.setenv(ENV_CLIENT_ID, "id")
+    monkeypatch.setenv(ENV_CLIENT_SECRET, "secret")
+    monkeypatch.setattr("twitchbar.cli.setup_logging", lambda *a, **k: tmp_path / "log")
+    held = acquire(tmp_path / "twitchbar.lock")
+    assert held is not None
+    assert main([]) == 3
+    assert "already running" in capsys.readouterr().err
+    held.close()
 
 
 def test_setup_writes_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -70,10 +70,11 @@ class Config:
 
 @dataclass(frozen=True, slots=True)
 class Paths:
-    """The three places twitchbar writes to: config, token and logs."""
+    """Where twitchbar writes: config, token, the single-instance lock, and logs."""
 
     config_file: Path
     token_file: Path
+    lock_file: Path
     log_dir: Path
 
     @classmethod
@@ -91,6 +92,7 @@ class Paths:
         return cls(
             config_file=config_file,
             token_file=config_file.with_name("token.json"),
+            lock_file=config_file.with_name("twitchbar.lock"),
             log_dir=Path(user_log_dir(APP_NAME)),
         )
 
