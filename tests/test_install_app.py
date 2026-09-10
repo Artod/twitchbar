@@ -15,7 +15,8 @@ def test_build_writes_a_launchable_bundle(tmp_path: Path, monkeypatch: pytest.Mo
     plist = plistlib.loads((app / "Contents" / "Info.plist").read_bytes())
     assert plist["CFBundleExecutable"] == "twitchbar" and plist["LSUIElement"] is True
     launcher = app / "Contents" / "MacOS" / "twitchbar"
-    assert launcher.read_text().splitlines()[-1] == 'exec /opt/bin/twitchbar run "$@"'
+    last = launcher.read_text().splitlines()[-1]
+    assert last == '/usr/bin/nohup /opt/bin/twitchbar run "$@" >/dev/null 2>&1 &'
     assert launcher.stat().st_mode & 0o111
     assert (app / "Contents" / "Resources" / "twitchbar.icns").stat().st_size > 1000
     assert install_app.remove(tmp_path) == app
