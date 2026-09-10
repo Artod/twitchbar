@@ -103,6 +103,20 @@ def test_messages_are_counted_kept_and_alerted() -> None:
     )
 
 
+def test_bar_counts_unread_messages_until_the_menu_opens() -> None:
+    stats = connected()
+    stats.apply(ChatMessage("a", "one"))
+    stats.apply(ChatMessage("b", "two"))
+    stats.apply(ChatMessage("me", "mine", is_self=True))
+    assert stats.tray_title() == "⏸ · 💬 2 · ❤ 0"
+    assert stats.messages == 3
+    stats.mark_seen()
+    assert stats.tray_title() == "⏸ · 💬 0 · ❤ 0"
+    assert [line.text for line in stats.recent_lines()] == ["me: mine", "b: two", "a: one"]
+    stats.apply(ChatMessage("c", "three"))
+    assert stats.unread == 1
+
+
 def test_own_and_ignored_messages() -> None:
     stats = connected()
     assert stats.apply(ChatMessage("me", "testing", is_self=True)) == []

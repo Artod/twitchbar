@@ -110,6 +110,7 @@ class SessionStats:
         self.game = ""
         self.started_at: datetime | None = None
         self.messages = 0
+        self.unread = 0  # messages since the menu was last opened; the number in the bar
         self.followers = 0
         self.subs = 0
         self.raids = 0
@@ -186,7 +187,7 @@ class SessionStats:
         self.live = True
         self.started_at = started_at
         self.viewers = None
-        self.messages = self.followers = self.subs = self.raids = self.bits = 0
+        self.messages = self.unread = self.followers = self.subs = self.raids = self.bits = 0
         self.recent.clear()
         return [
             Alert(
@@ -209,8 +210,11 @@ class SessionStats:
             return []
         self.messages += 1
         self.recent.append(message)
-        if message.is_self and not self._notify_own:
-            return []
+        if message.is_self:
+            if not self._notify_own:
+                return []
+        else:
+            self.unread += 1
         body = shorten(message.text, 240)
         return [Alert(KIND_MESSAGE, f"💬 {message.user}", body, self._own_chat())]
 
@@ -234,6 +238,10 @@ class SessionStats:
 
     # -- presentation ---------------------------------------------------------
 
+    def mark_seen(self) -> None:
+        """The user opened the menu: the unread count in the bar starts over."""
+        self.unread = 0
+
     def uptime(self, now: datetime | None = None) -> timedelta | None:
         """How long the stream has been live, or None when offline."""
         if not self.live or self.started_at is None:
@@ -249,7 +257,7 @@ class SessionStats:
         return "…" if self.viewers is None else str(self.viewers)
 
     def tray_title(self) -> str:
-        """The text shown in the menu bar, e.g. ``👁 3 · 💬 12 · ❤ 1``."""
+        """The text shown in the menu bar: viewers, unread messages, followers this stream."""
         if self.state == STATE_AUTHORIZING:
             return "🔑 login"
         if self.state == STATE_CONNECTING:
@@ -257,7 +265,7 @@ class SessionStats:
         if self.state == STATE_ERROR:
             return "⚠️ twitchbar"
         eye = f"👁 {self.badge()}" if self.live else "⏸"
-        return f"{eye} · 💬 {self.messages} · ❤ {self.followers}"
+        return f"{eye} · 💬 {self.unread} · ❤ {self.followers}"
 
     def summary_lines(self, now: datetime | None = None) -> tuple[MenuLine, ...]:
         """The block at the top of the menu: stream, uptime, chat size, session counters.

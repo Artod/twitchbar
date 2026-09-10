@@ -102,6 +102,11 @@ class App:
         log.info("quiet mode %s", "on" if self.quiet else "off")
         self._tray.render(self.view())
 
+    def menu_opened(self) -> None:
+        """The user is looking at the menu: unread messages are seen now."""
+        self._stats.mark_seen()
+        self._tray.render(self.view())
+
     def open_url(self, url: str) -> None:
         """Open ``url`` in the default browser."""
         log.info("open %s", url)

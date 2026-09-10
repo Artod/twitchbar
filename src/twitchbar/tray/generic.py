@@ -52,14 +52,19 @@ class GenericTray:
         url = line.url
         return pystray.MenuItem(line.text, lambda: self._actions.open_url(url))
 
+    def _open_chat(self) -> None:
+        # The default item also runs on a plain left click of the icon (Windows): that is the
+        # moment the user looked, so the unread count resets too.
+        self._actions.menu_opened()
+        self._actions.open_chat()
+
     def _items(self) -> Iterator[pystray.MenuItem]:
         view = self._view
         for line in view.summary:
             yield self._row(line)
         yield pystray.Menu.SEPARATOR
         yield pystray.MenuItem(
-            f"Recent messages ({len(view.recent)})",
-            pystray.Menu(*(self._row(line) for line in view.recent)),
+            "Recent messages", pystray.Menu(*(self._row(line) for line in view.recent))
         )
         yield pystray.MenuItem(
             f"In chat ({len(view.chatters)})",
@@ -67,7 +72,7 @@ class GenericTray:
         )
         yield pystray.Menu.SEPARATOR
         yield pystray.MenuItem("Open channel", lambda: self._actions.open_channel())
-        yield pystray.MenuItem("Open chat popout", lambda: self._actions.open_chat())
+        yield pystray.MenuItem("Open chat popout", self._open_chat, default=True)
         yield pystray.MenuItem("Open stream manager", lambda: self._actions.open_dashboard())
         yield pystray.Menu.SEPARATOR
         yield pystray.MenuItem(

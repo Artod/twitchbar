@@ -6,13 +6,13 @@ Your Twitch channel in the menu bar. The live viewer count sits in the bar, ever
   <img src="docs/menubar.png" alt="The macOS menu bar with twitchbar showing 2 viewers, 26 messages and 0 new followers" width="770">
 </p>
 
-Two viewers, twenty-six messages, no new followers yet: that is the whole stream at a glance, and every one of those messages arrived as a banner with a sound the moment it was posted.
+Two viewers, twenty-six messages you have not looked at yet, no new followers: that is the whole stream at a glance, and every one of those messages arrived as a banner with a sound the moment it was posted.
 
 Built for small channels. When three people are watching, each of them matters, and a message deserves an answer within seconds, not whenever you next glance at the chat window. twitchbar makes sure you hear it.
 
 ## What you get
 
-- **Menu bar text** with viewers, messages and new followers this stream. Offline it shows `⏸`.
+- **Menu bar text** with viewers, unread messages and new followers this stream. The message count is what arrived since you last opened the menu, so a glance tells you whether there is anything to answer; opening the menu resets it. Offline the bar shows `⏸`.
 - **A banner and a sound** for each of these, so you can tell them apart by ear:
 
   | Event | Banner | Sound |
@@ -158,7 +158,7 @@ Session counters reset every time the stream goes live, so the numbers in the me
 ## Platforms
 
 - **macOS**: the primary target. Native menu bar text via [rumps](https://github.com/jaredks/rumps), banners through Notification Center posted by twitchbar itself (a plain Python process gets a bundle identifier at runtime for that), a system sound per event played in-process, no Dock icon.
-- **Windows and Linux**: experimental. The tray backend uses [pystray](https://github.com/moses-palmer/pystray) and draws the viewer count into the icon, since those trays have no text. Notifications come from the tray's own balloon on Windows and from `notify-send` on Linux; sounds are whatever the system plays. This backend runs on macOS too (`twitchbar --tray generic`), which is how it was tested; reports from Windows users are welcome.
+- **Windows and Linux**: experimental. The tray backend uses [pystray](https://github.com/moses-palmer/pystray) and draws the viewer count into the icon, since those trays have no text. A left click on the icon opens the chat popout and resets the unread count; the menu is on the right button. Notifications come from the tray's own balloon on Windows and from `notify-send` on Linux; sounds are whatever the system plays. This backend runs on macOS too (`twitchbar --tray generic`), which is how it was tested; reports from Windows users are welcome.
 
 ## Troubleshooting
 

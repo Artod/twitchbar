@@ -103,6 +103,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
     app_ref: list[App] = []  # the tray needs its actions before the app that serves them exists
     actions = TrayActions(
+        menu_opened=lambda: app_ref[0].menu_opened(),
         open_url=lambda url: app_ref[0].open_url(url),
         open_channel=lambda: app_ref[0].open_channel(),
         open_chat=lambda: app_ref[0].open_chat(),

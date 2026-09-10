@@ -99,6 +99,17 @@ def test_link_actions_use_the_signed_in_login() -> None:
     ]
 
 
+def test_opening_the_menu_resets_the_unread_count() -> None:
+    app, tray, _, _ = build()
+    app.run()
+    assert tray.views[-1].title == "⏸ · 💬 1 · ❤ 1"
+    app.menu_opened()
+    assert tray.views[-1].title == "⏸ · 💬 0 · ❤ 1"
+    assert tray.views[-1].recent == (
+        MenuLine("alice: hello", "https://www.twitch.tv/popout/me/chat"),
+    )
+
+
 def test_quiet_mode_keeps_stats_but_silences_banners() -> None:
     app, tray, notifier, _ = build(quiet=True)
     app.run()

@@ -31,6 +31,7 @@ class TrayView:
 class TrayActions:
     """What the menu's clickable items do."""
 
+    menu_opened: Callable[[], None]
     open_url: Callable[[str], None]
     open_channel: Callable[[], None]
     open_chat: Callable[[], None]

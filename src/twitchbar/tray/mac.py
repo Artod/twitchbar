@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from itertools import zip_longest
+from typing import Any
 
 import rumps
+from Foundation import NSObject, NSRunLoop, NSRunLoopCommonModes
 
 from twitchbar.tray.base import MenuLine, TrayActions, TrayView
 
@@ -14,6 +16,21 @@ CHATTER_SLOTS = 80
 GROUP_SUMMARY = "summary"
 GROUP_RECENT = "recent"
 GROUP_CHATTERS = "chatters"
+
+
+class _MenuDelegate(NSObject):  # type: ignore[misc]
+    """Tells the app when the status menu opens (the moment the unread count resets)."""
+
+    def initWithCallback_(self, callback: Callable[[], None]) -> Any:
+        """Objective-C style initializer."""
+        self = self.init()
+        if self is not None:
+            self._callback = callback
+        return self
+
+    def menuWillOpen_(self, menu: Any) -> None:
+        """NSMenuDelegate: the user clicked the status item."""
+        self._callback()
 
 
 class MacTray:
@@ -50,6 +67,8 @@ class MacTray:
             None,
             rumps.MenuItem("Quit twitchbar", callback=lambda _: actions.quit()),
         ]
+        self._delegate = _MenuDelegate.alloc().initWithCallback_(actions.menu_opened)
+        self._app.menu._menu.setDelegate_(self._delegate)  # rumps keeps the NSMenu in ``_menu``
         self._timer: rumps.Timer | None = None
         self._view: TrayView | None = None
 
@@ -70,6 +89,9 @@ class MacTray:
         """Start the tick timer and enter the Cocoa run loop (blocks until quit)."""
         self._timer = rumps.Timer(lambda _: tick(), interval)
         self._timer.start()
+        # rumps schedules its timer in the default mode only, which pauses while a menu is open;
+        # the common modes keep the menu contents live while the user is looking at them.
+        NSRunLoop.currentRunLoop().addTimer_forMode_(self._timer._nstimer, NSRunLoopCommonModes)
         self._app.run()
 
     def render(self, view: TrayView) -> None:
@@ -83,7 +105,6 @@ class MacTray:
             self._fill(self._summary, view.summary)
         if previous is None or previous.recent != view.recent:
             self._fill(self._recent, view.recent)
-            self._recent_menu.title = f"Recent messages ({len(view.recent)})"
         if previous is None or previous.chatters != view.chatters:
             self._fill(self._chatters, view.chatters)
             self._chatters_menu.title = f"In chat ({len(view.chatters)})"
