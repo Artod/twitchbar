@@ -82,7 +82,13 @@ twitchbar
 
 The first run opens your browser on Twitch's authorization page listing the permissions twitchbar asks for (read chat, followers, chatters, subscriptions and bits of your own channel). Click **Authorize**. The browser lands on a "you may close this window" page, the token is saved, and `👁` appears in the menu bar. Later runs need no browser.
 
-The first alert makes macOS ask whether **python3.x** (the interpreter running twitchbar) may show notifications. Click that banner and choose **Allow**. If you missed it, open System Settings → Notifications, find the python entry and switch it on. Sounds play either way: they come from twitchbar itself, not from the banner, so you hear a message even if you never answer that prompt.
+Sounds come from twitchbar itself, so you hear every message from the first run. Banners need one more step on macOS, because a Python process is not an application in Notification Center's eyes:
+
+```bash
+brew install terminal-notifier
+```
+
+[terminal-notifier](https://github.com/julienXX/terminal-notifier) is a small signed app that posts banners on behalf of command-line tools. twitchbar uses it automatically when it is installed; the first banner makes macOS ask whether terminal-notifier may notify you, answer **Allow**, and a click on a banner opens the page behind it. Without it twitchbar posts the banner from its own process, which macOS asks about once as **python3.x Notifications** and, on recent versions, often never shows.
 
 ### A double-clickable app (macOS)
 
@@ -174,7 +180,7 @@ Session counters reset every time the stream goes live, so the numbers in the me
 - **`zsh: command not found: twitchbar` right after `uv tool install`**: uv puts its tools in `~/.local/bin`, which is not on PATH on a fresh shell. Run `uv tool update-shell`, open a new terminal, try again.
 - **"Invalid client name" on the Twitch console**: the application name must not contain the word *twitch*.
 - **The browser says the redirect failed**: the redirect URL in the Twitch console must be exactly `http://localhost:17563`, and nothing else may be listening on port 17563 while you authorize.
-- **Sounds play but no banners on macOS**: the notification permission was not granted. System Settings → Notifications → the **python3.x** entry (named after the interpreter) → allow. Also check that a Focus mode is not on.
+- **Sounds play but no banners on macOS**: install terminal-notifier (see Install, step 3) and allow it when asked. If no permission dialog ever appears, not even for `terminal-notifier -title test -message hello` run by hand, macOS itself is refusing new apps; a restart has fixed that state before. Also check that a Focus mode is not on and that System Settings → Notifications lists terminal-notifier with banners enabled.
 - **No sound at all on macOS**: the sound name in `[sounds]` is not one of the system sounds; the log says which one. `""` means silent on purpose.
 - **The bar shows `⚠️ twitchbar`**: the connection failed; the log in `twitchbar paths` says why. A revoked token is fixed by `twitchbar logout` and starting again.
 - **Chat messages arrive but no join notifications**: the token predates the chatters permission. `twitchbar logout`, start again, authorize.
