@@ -29,7 +29,7 @@ Built for small channels. When three people are watching, each of them matters, 
 - **The menu**: live status with uptime, category and title, how many people are in chat, the session counters, the last ten messages, who is in chat right now, a quiet-mode switch and links to your channel, your chat popout and the stream manager.
 - **Everything is a link.** Click a message to jump into the chat popout and answer, click a name in the chatter list to open that person's channel, click the live line to open your stream, click a banner to open the page behind it.
 - **Quiet mode**: the menu keeps updating, the banners stop. For the moments you are on camera and cannot react anyway.
-- **Starts at login** on macOS with one command.
+- **An app icon and a login item** on macOS, each one command away.
 - **Local only**. Credentials and the token live in your user profile with owner-only permissions; the only network traffic is to Twitch's API.
 
 ## Install
@@ -84,6 +84,14 @@ The first run opens your browser on Twitch's authorization page listing the perm
 
 The first alert makes macOS ask whether **python3.x** (the interpreter running twitchbar) may show notifications. Click that banner and choose **Allow**. If you missed it, open System Settings → Notifications, find the python entry and switch it on. Sounds play either way: they come from twitchbar itself, not from the banner, so you hear a message even if you never answer that prompt.
 
+### A double-clickable app (macOS)
+
+```bash
+twitchbar install-app
+```
+
+This creates `/Applications/twitchbar.app` with its own icon. Double-click it, drag it to the Dock or the Desktop, find it in Spotlight. It is a two-line launcher around the installed command, so it needs no separate update; run `twitchbar install-app` again if you ever move the installation. Only one twitchbar runs per user: launching it while it is already in the menu bar does nothing. `twitchbar install-app --remove` deletes it.
+
 ### Start at login
 
 ```bash
@@ -132,6 +140,7 @@ Environment variables `TWITCHBAR_CLIENT_ID` and `TWITCHBAR_CLIENT_SECRET` overri
 | `twitchbar -v` | Debug logging on the terminal. |
 | `twitchbar setup` | Store the Client ID and Client Secret. |
 | `twitchbar logout` | Forget the stored token; the next run asks for authorization again. |
+| `twitchbar install-app` | Create `/Applications/twitchbar.app`, a double-clickable launcher with an icon (macOS). |
 | `twitchbar autostart on\|off` | Start at login (macOS). |
 | `twitchbar paths` | Print the config, token and log locations. |
 
