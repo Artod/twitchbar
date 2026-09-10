@@ -44,7 +44,7 @@ def test_title_follows_connection_state() -> None:
     stats.apply(SourceState(STATE_AUTHORIZING))
     assert stats.tray_title() == "🔑 login"
     stats.apply(SourceState(STATE_CONNECTED))
-    assert stats.tray_title() == "⏸ · 💬 0 · ❤ 0"
+    assert stats.tray_title() == "⏸ 💬0 ❤0"
     assert stats.badge() == "–"
 
 
@@ -54,7 +54,7 @@ def test_live_status_sets_viewers_and_title() -> None:
         StreamStatus(live=True, viewers=3, title="hello", game="Chatting", started_at=NOW)
     )
     assert [a.kind for a in alerts] == [KIND_ONLINE]
-    assert stats.tray_title() == "👁 3 · 💬 0 · ❤ 0"
+    assert stats.tray_title() == "👁3 💬0 ❤0"
     assert stats.badge() == "3"
     assert stats.uptime(NOW + timedelta(minutes=65)) == timedelta(minutes=65)
     live, headline = stats.summary_lines(NOW + timedelta(minutes=65))[:2]
@@ -108,10 +108,10 @@ def test_bar_counts_unread_messages_until_the_menu_opens() -> None:
     stats.apply(ChatMessage("a", "one"))
     stats.apply(ChatMessage("b", "two"))
     stats.apply(ChatMessage("me", "mine", is_self=True))
-    assert stats.tray_title() == "⏸ · 💬 2 · ❤ 0"
+    assert stats.tray_title() == "⏸ 💬2 ❤0"
     assert stats.messages == 3
     stats.mark_seen()
-    assert stats.tray_title() == "⏸ · 💬 0 · ❤ 0"
+    assert stats.tray_title() == "⏸ 💬0 ❤0"
     assert [line.text for line in stats.recent_lines()] == ["me: mine", "b: two", "a: one"]
     stats.apply(ChatMessage("c", "three"))
     assert stats.unread == 1

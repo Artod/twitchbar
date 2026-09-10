@@ -12,7 +12,7 @@ Built for small channels. When three people are watching, each of them matters, 
 
 ## What you get
 
-- **Menu bar text** with viewers, unread messages and new followers this stream. The message count is what arrived since you last opened the menu, so a glance tells you whether there is anything to answer; opening the menu resets it. Offline the bar shows `⏸`.
+- **Menu bar text** `👁3 💬26 ❤0`: viewers, unread messages and new followers this stream. The message count is what arrived since you last opened the menu, so a glance tells you whether there is anything to answer; opening the menu resets it. Offline the bar shows `⏸`.
 - **A banner and a sound** for each of these, so you can tell them apart by ear:
 
   | Event | Banner | Sound |

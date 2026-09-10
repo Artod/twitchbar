@@ -76,7 +76,7 @@ def test_events_become_banners_with_configured_sounds() -> None:
         ("💬 alice", "hello", "Pop", "https://www.twitch.tv/popout/me/chat"),
         ("❤️ New follower", "bob", "Hero", "https://www.twitch.tv/bob"),
     ]
-    assert tray.views[-1].title == "⏸ · 💬 1 · ❤ 1"
+    assert tray.views[-1].title == "⏸ 💬1 ❤1"
     assert tray.views[-1].recent == (
         MenuLine("alice: hello", "https://www.twitch.tv/popout/me/chat"),
     )
@@ -102,9 +102,9 @@ def test_link_actions_use_the_signed_in_login() -> None:
 def test_opening_the_menu_resets_the_unread_count() -> None:
     app, tray, _, _ = build()
     app.run()
-    assert tray.views[-1].title == "⏸ · 💬 1 · ❤ 1"
+    assert tray.views[-1].title == "⏸ 💬1 ❤1"
     app.menu_opened()
-    assert tray.views[-1].title == "⏸ · 💬 0 · ❤ 1"
+    assert tray.views[-1].title == "⏸ 💬0 ❤1"
     assert tray.views[-1].recent == (
         MenuLine("alice: hello", "https://www.twitch.tv/popout/me/chat"),
     )
@@ -115,7 +115,7 @@ def test_quiet_mode_keeps_stats_but_silences_banners() -> None:
     app.run()
     assert notifier.shown == []
     assert tray.views[-1].quiet is True
-    assert tray.views[-1].title == "⏸ · 💬 1 · ❤ 1"
+    assert tray.views[-1].title == "⏸ 💬1 ❤1"
     app.toggle_quiet()
     assert app.quiet is False and tray.views[-1].quiet is False
 

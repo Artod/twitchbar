@@ -87,12 +87,20 @@ class MacTray:
 
     def run(self, tick: Callable[[], None], interval: float) -> None:
         """Start the tick timer and enter the Cocoa run loop (blocks until quit)."""
-        self._timer = rumps.Timer(lambda _: tick(), interval)
+        self._timer = rumps.Timer(lambda _: self._first_tick(tick), interval)
         self._timer.start()
         # rumps schedules its timer in the default mode only, which pauses while a menu is open;
         # the common modes keep the menu contents live while the user is looking at them.
         NSRunLoop.currentRunLoop().addTimer_forMode_(self._timer._nstimer, NSRunLoopCommonModes)
         self._app.run()
+
+    def _first_tick(self, tick: Callable[[], None]) -> None:
+        # The status item exists once the run loop is up; give it a name so macOS remembers
+        # where the user Cmd-dragged it (out from under the notch, for instance).
+        item = getattr(self._app._nsapp, "nsstatusitem", None)
+        if item is not None and not item.autosaveName():
+            item.setAutosaveName_("twitchbar")
+        tick()
 
     def render(self, view: TrayView) -> None:
         """Retitle the slots that changed."""

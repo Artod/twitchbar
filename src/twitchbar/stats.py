@@ -281,8 +281,10 @@ class SessionStats:
             return "⏳"
         if self.state == STATE_ERROR:
             return "⚠️ twitchbar"
-        eye = f"👁 {self.badge()}" if self.live else "⏸"
-        return f"{eye} · 💬 {self.unread} · ❤ {self.followers}"
+        # Compact on purpose: on a MacBook with a notch, macOS hides any status item that does
+        # not fit to the right of it, and every pixel of width counts there.
+        eye = f"👁{self.badge()}" if self.live else "⏸"
+        return f"{eye} 💬{self.unread} ❤{self.followers}"
 
     def summary_lines(self, now: datetime | None = None) -> tuple[MenuLine, ...]:
         """The block at the top of the menu: stream, uptime, chat size, session counters.
