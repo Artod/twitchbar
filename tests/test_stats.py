@@ -190,3 +190,24 @@ def test_helpers() -> None:
     assert shorten("short", 10) == "short"
     assert format_duration(timedelta(minutes=7)) == "7m"
     assert format_duration(timedelta(hours=2, minutes=3)) == "2h 03m"
+
+
+def test_join_alerts_skip_yourself_and_flapping_viewers() -> None:
+    stats = connected()  # signed in as "me"
+    stats.apply(chatters("alice"))
+    assert stats.apply(chatters("alice", "me")) == []
+    (alert,) = stats.apply(chatters("alice", "me", "bob"))
+    assert alert.body == "bob"
+    # bob drops out and is back on the next poll: no second ping within the cooldown
+    stats.apply(chatters("alice", "me"))
+    assert stats.apply(chatters("alice", "me", "bob")) == []
+
+
+def test_join_alert_returns_after_the_cooldown() -> None:
+    stats = SessionStats(join_cooldown=timedelta(minutes=10))
+    stats.apply(SourceState(STATE_CONNECTED, "me"))
+    stats._apply_chatters((Chatter("bob"),), now=NOW)
+    stats._apply_chatters((), now=NOW + timedelta(minutes=1))
+    assert stats._apply_chatters((Chatter("bob"),), now=NOW + timedelta(minutes=5)) == []
+    stats._apply_chatters((), now=NOW + timedelta(minutes=6))
+    assert len(stats._apply_chatters((Chatter("bob"),), now=NOW + timedelta(minutes=20))) == 1

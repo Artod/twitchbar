@@ -10,8 +10,10 @@ it is heard even before that question is answered or if banners are declined.
 from __future__ import annotations
 
 import logging
+import shutil
+import subprocess
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
 import objc
@@ -21,6 +23,11 @@ from Foundation import NSBundle, NSObject, NSUserNotification, NSUserNotificatio
 from twitchbar.notify import open_in_browser
 
 log = logging.getLogger(__name__)
+
+
+def _spawn(command: Sequence[str]) -> None:
+    subprocess.Popen(list(command), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 
 BUNDLE_ID = "io.github.artod.twitchbar"
 URL_KEY = "url"
@@ -71,10 +78,31 @@ class _Delegate(NSObject):  # type: ignore[misc]
             self._opener(str(url))
 
 
-class MacNotifier:
-    """Notification Center banners with a system sound per alert; a click opens the alert's URL."""
+def terminal_notifier_command(binary: str, title: str, body: str, url: str | None) -> list[str]:
+    """The ``terminal-notifier`` invocation for one banner (no sound: twitchbar plays its own)."""
+    command = [binary, "-title", title, "-message", body, "-group", "twitchbar"]
+    if url:
+        command += ["-open", url]
+    return command
 
-    def __init__(self, opener: Callable[[str], None] = open_in_browser) -> None:
+
+class MacNotifier:
+    """Notification Center banners with a system sound per alert; a click opens the alert's URL.
+
+    Banners go through ``terminal-notifier`` when it is installed (``brew install
+    terminal-notifier``): it is a signed application, so macOS asks for permission properly and
+    lists it in System Settings. Without it, the banner is posted from this process, which recent
+    macOS versions accept but often never show.
+    """
+
+    def __init__(
+        self,
+        opener: Callable[[str], None] = open_in_browser,
+        terminal_notifier: str | None = None,
+        spawn: Callable[[Sequence[str]], None] | None = None,
+    ) -> None:
+        self._terminal_notifier = terminal_notifier or shutil.which("terminal-notifier")
+        self._spawn = spawn or _spawn
         install_bundle_identifier()
         self._center = NSUserNotificationCenter.defaultUserNotificationCenter()
         self._delegate = _Delegate.alloc().initWithOpener_(opener)
@@ -87,6 +115,9 @@ class MacNotifier:
     ) -> None:
         """Play ``sound`` and post the banner."""
         self.play(sound)
+        if self._terminal_notifier:
+            self._spawn(terminal_notifier_command(self._terminal_notifier, title, body, url))
+            return
         notification = NSUserNotification.alloc().init()
         notification.setTitle_(title)
         notification.setInformativeText_(body)

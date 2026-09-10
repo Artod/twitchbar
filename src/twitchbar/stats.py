@@ -97,8 +97,11 @@ class SessionStats:
         ignore_users: Iterable[str] = (),
         notify_own_messages: bool = False,
         notify_joins: bool = True,
+        join_cooldown: timedelta = timedelta(minutes=10),
     ) -> None:
         self._ignored = {user.lower() for user in ignore_users}
+        self._join_cooldown = join_cooldown
+        self._last_seen: dict[str, datetime] = {}  # login -> when they were last in chat
         self._notify_own = notify_own_messages
         self._notify_joins = notify_joins
         self.state = STATE_CONNECTING
@@ -218,9 +221,24 @@ class SessionStats:
         body = shorten(message.text, 240)
         return [Alert(KIND_MESSAGE, f"💬 {message.user}", body, self._own_chat())]
 
-    def _apply_chatters(self, users: tuple[Chatter, ...]) -> list[Alert]:
+    def _apply_chatters(
+        self, users: tuple[Chatter, ...], now: datetime | None = None
+    ) -> list[Alert]:
+        now = now or datetime.now(UTC)
         current = {links.login_of(c.name, c.login): c.name for c in users}
         joined = sorted((login for login in current if login not in self.chatters), key=str.lower)
+        # A viewer whose connection flaps drops out of the list and comes back a minute later;
+        # that is not a new arrival, so a join only counts after ``join_cooldown`` of absence.
+        fresh = [
+            login
+            for login in joined
+            if login != self.login.lower()
+            and not self._is_ignored(current[login])
+            and now - self._last_seen.get(login, datetime.min.replace(tzinfo=UTC))
+            > self._join_cooldown
+        ]
+        for login in self.chatters:
+            self._last_seen[login] = now
         self.chatters = current
         if not self._chatters_seeded:
             self._chatters_seeded = True
@@ -229,8 +247,7 @@ class SessionStats:
             return []
         return [
             Alert(KIND_JOIN, "👋 Joined chat", current[login], links.channel(login))
-            for login in joined
-            if not self._is_ignored(current[login])
+            for login in fresh
         ]
 
     def _is_ignored(self, user: str) -> bool:
