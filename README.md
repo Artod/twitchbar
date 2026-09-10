@@ -2,9 +2,11 @@
 
 Your Twitch channel in the menu bar. The live viewer count sits in the bar, every chat message, follower, sub, raid and cheer arrives as a notification with its own sound, and one click shows the whole session. Every row of the menu and every banner opens the right Twitch page: the chat popout, a viewer's channel, the stream manager.
 
-```
- 👁 3 · 💬 12 · ❤ 1          ← what the menu bar shows while you are live
-```
+<p align="center">
+  <img src="docs/menubar.png" alt="The macOS menu bar with twitchbar showing 2 viewers, 26 messages and 0 new followers" width="770">
+</p>
+
+Two viewers, twenty-six messages, no new followers yet: that is the whole stream at a glance, and every one of those messages arrived as a banner with a sound the moment it was posted.
 
 Built for small channels. When three people are watching, each of them matters, and a message deserves an answer within seconds, not whenever you next glance at the chat window. twitchbar makes sure you hear it.
 
