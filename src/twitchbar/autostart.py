@@ -12,6 +12,13 @@ from pathlib import Path
 LABEL = "io.github.artod.twitchbar"
 
 
+def _gui_domain() -> str:
+    """Launchctl's per-user domain, ``gui/<uid>``; only meaningful on macOS."""
+    if sys.platform != "darwin":
+        raise RuntimeError("LaunchAgents exist only on macOS")
+    return f"gui/{os.getuid()}"
+
+
 def launch_agent_path() -> Path:
     """Where the macOS LaunchAgent lives."""
     return Path.home() / "Library" / "LaunchAgents" / f"{LABEL}.plist"
@@ -39,9 +46,9 @@ def enable(log_dir: Path) -> Path:
     with path.open("wb") as handle:
         plistlib.dump(plist, handle)
     subprocess.run(
-        ["launchctl", "bootout", f"gui/{os.getuid()}", str(path)], capture_output=True, check=False
+        ["launchctl", "bootout", _gui_domain(), str(path)], capture_output=True, check=False
     )
-    subprocess.run(["launchctl", "bootstrap", f"gui/{os.getuid()}", str(path)], check=True)
+    subprocess.run(["launchctl", "bootstrap", _gui_domain(), str(path)], check=True)
     return path
 
 
@@ -51,7 +58,7 @@ def disable() -> Path | None:
     if not path.exists():
         return None
     subprocess.run(
-        ["launchctl", "bootout", f"gui/{os.getuid()}", str(path)], capture_output=True, check=False
+        ["launchctl", "bootout", _gui_domain(), str(path)], capture_output=True, check=False
     )
     path.unlink()
     return path
