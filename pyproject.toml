@@ -1,0 +1,85 @@
+[project]
+name = "twitchbar"
+version = "0.1.0"
+description = "Your Twitch channel in the menu bar: live viewer count, and a notification for every chat message, follower, sub, raid and cheer."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Artem Belousov" }]
+keywords = ["twitch", "streaming", "menubar", "tray", "notifications", "eventsub"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: MacOS X",
+  "Environment :: Win32 (MS Windows)",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Topic :: Communications :: Chat",
+]
+dependencies = [
+  "twitchAPI>=4.5,<5",
+  "platformdirs>=4",
+  "tomli-w>=1",
+  "rumps>=0.4; sys_platform == 'darwin'",
+  "pystray>=0.19; sys_platform != 'darwin'",
+  "pillow>=10; sys_platform != 'darwin'",
+]
+
+[project.optional-dependencies]
+generic = ["pystray>=0.19", "pillow>=10"]
+
+[project.scripts]
+twitchbar = "twitchbar.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Artod/twitchbar"
+Repository = "https://github.com/Artod/twitchbar"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/twitchbar"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "mypy>=1.13",
+  "ruff>=0.8",
+  "pystray>=0.19",
+  "pillow>=10",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "ANN", "D"]
+ignore = ["D203", "D213", "D107", "ANN401"]
+allowed-confusables = ["–"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "ANN"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = [
+  "rumps", "rumps.*", "pystray", "pystray.*", "PIL", "PIL.*",
+  "AppKit", "AppKit.*", "Foundation", "Foundation.*", "objc", "objc.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

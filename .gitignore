@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Secrets and local state never belong in the repo
+.env
+*.env
+config.toml
+token.json
+
+# Editors and OS
+.claude/
+.vscode/
+.idea/
+.DS_Store
